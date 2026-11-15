@@ -243,8 +243,8 @@ let registroSeleccionado = null;
 let mascotasModal = [];
 let nuevasMascotas = [];
 let filaSimuladaCounter = 9000;
+let operandoEnServidor = false;
 
-// Variables para modal de cancelación
 let filaACancelar = null;
 let motivoCancelacionSeleccionado = "";
 
@@ -255,6 +255,30 @@ window.addEventListener("DOMContentLoaded", () => {
   cargarDatos();
   generarInputsNuevo();
 });
+
+// Auto-sincronización silenciosa cada 8 segundos para trabajo simultáneo
+setInterval(() => {
+  if (MODO_PRUEBA || operandoEnServidor) return;
+  const modalCheckinAbierto = document.getElementById("modal-checkin").style.display === "flex";
+  const modalCancelAbierto = document.getElementById("modal-cancelacion").style.display === "flex";
+  if (!modalCheckinAbierto && !modalCancelAbierto && vistaActual !== "nuevo") {
+    sincronizarSilencioso();
+  }
+}, 8000);
+
+async function sincronizarSilencioso() {
+  try {
+    const resp = await fetch(API_URL + "?t=" + Date.now());
+    const json = await resp.json();
+    if (json.status === "ok" && !operandoEnServidor) {
+      registrosGlobales = json.datos;
+      actualizarContadores();
+      renderizarLista();
+    }
+  } catch (e) {
+    // Reintentará en el siguiente intervalo sin interrumpir al usuario
+  }
+}
 
 function seleccionarVista(vista) {
   vistaActual = vista;
@@ -415,7 +439,7 @@ function renderizarLista() {
   }).join("");
 }
 
-/* Lógica del Modal de Cancelación */
+/* Modal de Cancelación */
 function abrirModalCancelacion(numFila) {
   const reg = registrosGlobales.find(r => r.fila === numFila);
   if (!reg) return;
@@ -494,6 +518,7 @@ async function avanzarEstado(numFila, nuevoEstado, btnEl) {
     return;
   }
 
+  operandoEnServidor = true;
   if (btnEl) {
     btnEl.disabled = true;
     btnEl.textContent = "Actualizando...";
@@ -518,6 +543,8 @@ async function avanzarEstado(numFila, nuevoEstado, btnEl) {
   } catch (err) {
     alert("Error de conexión al cambiar estado.");
     if (btnEl) btnEl.disabled = false;
+  } finally {
+    operandoEnServidor = false;
   }
 }
 
@@ -656,6 +683,7 @@ async function confirmarCheckin() {
     return;
   }
 
+  operandoEnServidor = true;
   const btn = document.getElementById("btn-confirmar-checkin");
   btn.disabled = true;
   btn.textContent = "Asignando turnos...";
@@ -683,6 +711,7 @@ async function confirmarCheckin() {
   } catch (err) {
     alert("Error al enviar datos. Intenta nuevamente.");
   } finally {
+    operandoEnServidor = false;
     btn.disabled = false;
     btn.textContent = "Asignar ID(s)";
   }
@@ -763,6 +792,7 @@ async function guardarNuevoPresencial() {
     return;
   }
 
+  operandoEnServidor = true;
   const btn = document.getElementById("btn-guardar-nuevo");
   btn.disabled = true;
   btn.textContent = "Registrando...";
@@ -798,6 +828,7 @@ async function guardarNuevoPresencial() {
   } catch (err) {
     alert("Error de conexión al guardar.");
   } finally {
+    operandoEnServidor = false;
     btn.disabled = false;
     btn.textContent = "Registrar y Generar ID(s)";
   }
