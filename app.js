@@ -1,4 +1,3 @@
-// ⚠️ REEMPLAZA ESTA URL CON LA URL DE TU APLICACIÓN WEB DE APPS SCRIPT
 const API_URL = "https://script.google.com/macros/s/AKfycbzrmVxXa40QCbtzrB06XlYjblnramZOkF6PqWTIq2-e6ce0TTTQCEhYl5sVqlckmCUC/exec";
 
 // 🧪 CAMBIA A false EL DÍA DEL EVENTO PARA GUARDAR DE VERDAD EN GOOGLE SHEETS
@@ -66,7 +65,7 @@ function renderizarLista() {
     if (bloqueFiltro && numBloque !== bloqueFiltro) return false;
 
     if (texto) {
-      const cadena = `${r.dueno}${r.documento} ${r.mascotas}${r.idPaciente}`.toLowerCase();
+      const cadena = `${r.dueno} ${r.documento} ${r.mascotas} ${r.idPaciente}`.toLowerCase();
       if (!cadena.includes(texto)) return false;
     }
     return true;
@@ -92,7 +91,8 @@ function renderizarLista() {
           <span class="badge badge-bloque">${etiquetaBloque}</span>
         </div>
         <div class="meta">
-          🐾 <strong>Mascotas (${r.cantidad}):</strong> ${escapeHTML(r.mascotas)}${r.especie ? `• <em>${escapeHTML(r.especie)}</em>` : ""}
+          🐾 <strong>Mascotas (${r.cantidad}):</strong> ${escapeHTML(r.mascotas)}
+          ${r.especie ? `• <em>${escapeHTML(r.especie)}</em>` : ""}
         </div>
         ${atendido
           ? `<div style="margin-top:8px"><span class="badge badge-id">Turno: ${escapeHTML(r.idPaciente)}</span></div>`
@@ -116,7 +116,20 @@ function separarNombresMascotas(textoCrudo, cantidad) {
 
   const resultado = [];
   for (let i = 0; i < cantidad; i++) {
-    resultado.push(partes[i] || `Mascota ${i + 1}`); } return resultado; }  function abrirModalCheckin(numFila) { registroSeleccionado = registrosGlobales.find(r => r.fila === numFila); if (!registroSeleccionado) return;  const nombres = separarNombresMascotas(registroSeleccionado.mascotas, registroSeleccionado.cantidad); mascotasModal = nombres.map(n => ({ nombre: n, especie: "" }));  const numBloque = (String(registroSeleccionado.bloque \vert{}\vert{} "").match(/\d+/) \vert{}\vert{} [registroSeleccionado.bloque])[0]; document.getElementById("modal-titulo").textContent = `Check-in: ${registroSeleccionado.dueno}`;
+    resultado.push(partes[i] || `Mascota ${i + 1}`);
+  }
+  return resultado;
+}
+
+function abrirModalCheckin(numFila) {
+  registroSeleccionado = registrosGlobales.find(r => r.fila === numFila);
+  if (!registroSeleccionado) return;
+
+  const nombres = separarNombresMascotas(registroSeleccionado.mascotas, registroSeleccionado.cantidad);
+  mascotasModal = nombres.map(n => ({ nombre: n, especie: "" }));
+
+  const numBloque = (String(registroSeleccionado.bloque || "").match(/\d+/) || [registroSeleccionado.bloque])[0];
+  document.getElementById("modal-titulo").textContent = `Check-in: ${registroSeleccionado.dueno}`;
   document.getElementById("modal-subtitulo").textContent =
     `Bloque ${numBloque} • Declaró ${registroSeleccionado.cantidad} mascota(s). Verifica nombre y especie:`;
 
@@ -177,7 +190,29 @@ async function confirmarCheckin() {
       };
     });
 
-    const resumen = simulados.map(a => `${a.nombre} (${a.especie}): ${a.id}`).join("\n"); alert("🧪 [MODO PRUEBA - NO GUARDADO EN SHEETS]\n\nTurnos que se asignarían:\n\n" + resumen); cerrarModal(); return; }  const btn = document.getElementById("btn-confirmar-checkin"); btn.disabled = true; btn.textContent = "Asignando turnos...";  try { const resp = await fetch(API_URL, { method: "POST", body: JSON.stringify({ accion: "checkin", fila: registroSeleccionado.fila, mascotas: mascotasModal }) }); const json = await resp.json();  if (json.status === "ok") { const resumen = json.asignados.map(a => `${a.nombre} (${a.especie}):${a.id}`).join("\n");
+    const resumen = simulados.map(a => `${a.nombre} (${a.especie}): ${a.id}`).join("\n");
+    alert("🧪 [MODO PRUEBA - NO GUARDADO EN SHEETS]\n\nTurnos que se asignarían:\n\n" + resumen);
+    cerrarModal();
+    return;
+  }
+
+  const btn = document.getElementById("btn-confirmar-checkin");
+  btn.disabled = true;
+  btn.textContent = "Asignando turnos...";
+
+  try {
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        accion: "checkin",
+        fila: registroSeleccionado.fila,
+        mascotas: mascotasModal
+      })
+    });
+    const json = await resp.json();
+
+    if (json.status === "ok") {
+      const resumen = json.asignados.map(a => `${a.nombre} (${a.especie}): ${a.id}`).join("\n");
       alert("✅ Turnos asignados:\n\n" + resumen);
       cerrarModal();
       await cargarDatos();
@@ -212,3 +247,90 @@ function renderizarInputsNuevo() {
         <button type="button" class="species-btn ${m.especie === 'Canino' ? 'selected-canino' : ''}"
           onclick="nuevasMascotas[${idx}].especie='Canino'; renderizarInputsNuevo()">🐶 Canino</button>
         <button type="button" class="species-btn ${m.especie === 'Felino' ? 'selected-felino' : ''}"
+          onclick="nuevasMascotas[${idx}].especie='Felino'; renderizarInputsNuevo()">🐱 Felino</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+async function guardarNuevoPresencial() {
+  const dueno = document.getElementById("nuevo-dueno").value.trim();
+  const documento = document.getElementById("nuevo-doc").value.trim();
+  const telefono = document.getElementById("nuevo-tel").value.trim();
+  const bloque = document.getElementById("nuevo-bloque").value;
+
+  if (!dueno) { alert("Ingresa el nombre del dueño"); return; }
+
+  for (let i = 0; i < nuevasMascotas.length; i++) {
+    if (!nuevasMascotas[i].nombre.trim() || !nuevasMascotas[i].especie) {
+      alert(`Completa nombre y especie para la Mascota ${i + 1}`);
+      return;
+    }
+  }
+
+  if (MODO_PRUEBA) {
+    let yaAsignados = registrosGlobales.filter(r =>
+      (String(r.bloque || "").match(/\d+/) || [""])[0] === bloque && r.idPaciente !== ""
+    ).length;
+
+    const simulados = nuevasMascotas.map(m => {
+      yaAsignados++;
+      return {
+        nombre: m.nombre,
+        especie: m.especie,
+        id: `B${bloque}-${String(yaAsignados).padStart(2, "0")}`
+      };
+    });
+
+    const resumen = simulados.map(a => `${a.nombre} (${a.especie}): ${a.id}`).join("\n");
+    alert("🧪 [MODO PRUEBA - NO GUARDADO EN SHEETS]\n\nPacientes que se crearían:\n\n" + resumen);
+    return;
+  }
+
+  const btn = document.getElementById("btn-guardar-nuevo");
+  btn.disabled = true;
+  btn.textContent = "Registrando...";
+
+  try {
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        accion: "nuevo",
+        dueno,
+        documento,
+        telefono,
+        bloque,
+        mascotas: nuevasMascotas
+      })
+    });
+    const json = await resp.json();
+
+    if (json.status === "ok") {
+      const resumen = json.asignados.map(a => `${a.nombre} (${a.especie}): ${a.id}`).join("\n");
+      alert("✅ Paciente(s) registrado(s):\n\n" + resumen);
+      document.getElementById("nuevo-dueno").value = "";
+      document.getElementById("nuevo-doc").value = "";
+      document.getElementById("nuevo-tel").value = "";
+      document.getElementById("nuevo-cantidad").value = "1";
+      nuevasMascotas = [];
+      generarInputsNuevo();
+      cambiarTab("lista");
+      await cargarDatos();
+    } else {
+      alert("Error: " + json.mensaje);
+    }
+  } catch (err) {
+    alert("Error de conexión al guardar.");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Registrar y Generar ID(s)";
+  }
+}
+
+function escapeHTML(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
