@@ -65,11 +65,11 @@
 
 <header>
   <h1>🐾 Control de Turnos - CUORE</h1>
-  <button class="btn-refresh" onclick="cargarDatos()">↻ Actualizar</button>
+  <button class="btn-refresh" onclick="cargarDatos()">↻ Reiniciar / Actualizar</button>
 </header>
 
 <div id="banner-prueba" class="banner-prueba hidden">
-  🧪 MODO PRUEBA ACTIVO: Los cambios simulados NO se guardan en Google Sheets
+  🧪 MODO PRUEBA INTERACTIVO: Simula todo el flujo en pantalla sin modificar Google Sheets
 </div>
 
 <div class="container">
@@ -111,7 +111,7 @@
         <option value="espera">2. En espera de atención</option>
         <option value="consulta">3. En consulta (revisión)</option>
         <option value="atendido">4. Atendido (finalizado)</option>
-        <option value="activos" selected>Activos en evento (Espera + Consulta)</option>
+        <option value="activos">Activos (Espera + Consulta)</option>
       </select>
     </div>
     <div id="contenedor-tarjetas"><p>Iniciando aplicación...</p></div>
@@ -179,12 +179,12 @@ let registrosGlobales = [];
 let registroSeleccionado = null;
 let mascotasModal = [];
 let nuevasMascotas = [];
+let filaSimuladaCounter = 9000;
 
 window.addEventListener("DOMContentLoaded", () => {
   if (MODO_PRUEBA) {
     document.getElementById("banner-prueba").classList.remove("hidden");
   }
-  // Por defecto abrimos en "1. Pendiente de llegada" para recepción
   document.getElementById("filtro-estado").value = "pendiente";
   cargarDatos();
   generarInputsNuevo();
@@ -294,280 +294,4 @@ function renderizarLista() {
         '<span class="badge badge-bloque">🕒 ' + etiquetaHorario + '</span>' +
       '</div>' +
       '<div class="meta">' +
-        '🐾 <strong>Mascota' + (tieneId ? '' : 's (' + r.cantidad + ')') + ':</strong> ' + escapeHTML(r.mascotas) +
-        (r.especie ? ' • <strong>' + escapeHTML(r.especie) + '</strong>' : '') +
-      '</div>' +
-      (tieneId
-        ? '<div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">' +
-            '<span class="badge badge-id">' + escapeHTML(r.idPaciente) + '</span>' +
-            badgeEstado +
-          '</div>'
-        : ''
-      ) +
-      botonAccion +
-    '</div>';
-  }).join("");
-}
-
-async function avanzarEstado(numFila, nuevoEstado, btnEl) {
-  if (MODO_PRUEBA) {
-    alert("🧪 [MODO PRUEBA - NO GUARDADO EN SHEETS]\n\nEl paciente pasaría al estado: " + nuevoEstado);
-    return;
-  }
-
-  btnEl.disabled = true;
-  btnEl.textContent = "Actualizando...";
-
-  try {
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        accion: "cambiar_estado",
-        fila: numFila,
-        nuevoEstado: nuevoEstado
-      })
-    });
-    const json = await resp.json();
-    if (json.status === "ok") {
-      await cargarDatos();
-    } else {
-      alert("Error: " + json.mensaje);
-      btnEl.disabled = false;
-    }
-  } catch (err) {
-    alert("Error de conexión al cambiar estado.");
-    btnEl.disabled = false;
-  }
-}
-
-function separarNombresMascotas(textoCrudo, cantidad) {
-  const limpio = String(textoCrudo || "").trim();
-  if (cantidad <= 1) return [limpio || "Mascota 1"];
-
-  const partes = limpio
-    .split(/\s*[,;]\s*|\s+y\s+/i)
-    .map(s => s.trim())
-    .filter(s => s.length > 0);
-
-  const resultado = [];
-  for (let i = 0; i < cantidad; i++) {
-    resultado.push(partes[i] || ("Mascota " + (i + 1)));
-  }
-  return resultado;
-}
-
-function abrirModalCheckin(numFila) {
-  registroSeleccionado = registrosGlobales.find(r => r.fila === numFila);
-  if (!registroSeleccionado) return;
-
-  const nombres = separarNombresMascotas(registroSeleccionado.mascotas, registroSeleccionado.cantidad);
-  mascotasModal = nombres.map(n => ({ nombre: n, especie: "" }));
-
-  const horarioTexto = obtenerEtiquetaHorario(registroSeleccionado.bloque);
-  document.getElementById("modal-titulo").textContent = "Check-in: " + registroSeleccionado.dueno;
-  document.getElementById("modal-subtitulo").textContent =
-    "Horario: " + horarioTexto + " • Declaró " + registroSeleccionado.cantidad + " mascota(s). Verifica nombre y especie:";
-
-  renderizarMascotasModal();
-  document.getElementById("modal-checkin").style.display = "flex";
-}
-
-function renderizarMascotasModal() {
-  const cont = document.getElementById("modal-mascotas-lista");
-  cont.innerHTML = mascotasModal.map((m, idx) =>
-    '<div class="pet-row">' +
-      '<label style="font-size:0.8rem; font-weight:700; color:#475569">Mascota ' + (idx + 1) + '</label>' +
-      '<input type="text" value="' + escapeHTML(m.nombre) + '" oninput="mascotasModal[' + idx + '].nombre = this.value" style="margin-top:4px" />' +
-      '<div class="species-group">' +
-        '<button type="button" class="species-btn ' + (m.especie === 'Canino' ? 'selected-canino' : '') + '" onclick="seleccionarEspecieModal(' + idx + ', \'Canino\')">🐶 Canino</button>' +
-        '<button type="button" class="species-btn ' + (m.especie === 'Felino' ? 'selected-felino' : '') + '" onclick="seleccionarEspecieModal(' + idx + ', \'Felino\')">🐱 Felino</button>' +
-      '</div>' +
-    '</div>'
-  ).join("");
-}
-
-function seleccionarEspecieModal(idx, especie) {
-  mascotasModal[idx].especie = especie;
-  renderizarMascotasModal();
-}
-
-function cerrarModal() {
-  document.getElementById("modal-checkin").style.display = "none";
-  registroSeleccionado = null;
-}
-
-async function confirmarCheckin() {
-  for (let i = 0; i < mascotasModal.length; i++) {
-    if (!mascotasModal[i].nombre.trim()) {
-      alert("Escribe el nombre de la Mascota " + (i + 1));
-      return;
-    }
-    if (!mascotasModal[i].especie) {
-      alert("Selecciona si \"" + mascotasModal[i].nombre + "\" es Canino o Felino");
-      return;
-    }
-  }
-
-  if (MODO_PRUEBA) {
-    const bloqueObj = (String(registroSeleccionado.bloque || "").match(/\d+/) || ["1"])[0];
-    let yaAsignados = registrosGlobales.filter(r =>
-      (String(r.bloque || "").match(/\d+/) || [""])[0] === bloqueObj && r.idPaciente !== ""
-    ).length;
-
-    const simulados = mascotasModal.map(m => {
-      yaAsignados++;
-      return {
-        nombre: m.nombre,
-        especie: m.especie,
-        id: "B" + bloqueObj + "-" + String(yaAsignados).padStart(2, "0")
-      };
-    });
-
-    const resumen = simulados.map(a => a.nombre + " (" + a.especie + "): " + a.id + " → En espera").join("\n");
-    alert("🧪 [MODO PRUEBA - NO GUARDADO EN SHEETS]\n\nTurnos que se asignarían:\n\n" + resumen);
-    cerrarModal();
-    return;
-  }
-
-  const btn = document.getElementById("btn-confirmar-checkin");
-  btn.disabled = true;
-  btn.textContent = "Asignando turnos...";
-
-  try {
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        accion: "checkin",
-        fila: registroSeleccionado.fila,
-        mascotas: mascotasModal
-      })
-    });
-    const json = await resp.json();
-
-    if (json.status === "ok") {
-      const resumen = json.asignados.map(a => a.nombre + " (" + a.especie + "): " + a.id + " → En espera").join("\n");
-      alert("✅ Turnos asignados:\n\n" + resumen);
-      cerrarModal();
-      await cargarDatos();
-    } else {
-      alert("Error: " + json.mensaje);
-    }
-  } catch (err) {
-    alert("Error al enviar datos. Intenta nuevamente.");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Asignar ID(s)";
-  }
-}
-
-function generarInputsNuevo() {
-  const cant = Math.max(1, Math.min(10, Number(document.getElementById("nuevo-cantidad").value) || 1));
-  nuevasMascotas = Array.from({ length: cant }, (_, i) => ({
-    nombre: (nuevasMascotas[i] && nuevasMascotas[i].nombre) || "",
-    especie: (nuevasMascotas[i] && nuevasMascotas[i].especie) || ""
-  }));
-  renderizarInputsNuevo();
-}
-
-function renderizarInputsNuevo() {
-  const cont = document.getElementById("nuevo-mascotas-container");
-  cont.innerHTML = nuevasMascotas.map((m, idx) =>
-    '<div class="pet-row">' +
-      '<label style="font-size:0.8rem; font-weight:700; color:#475569">Nombre Mascota ' + (idx + 1) + '</label>' +
-      '<input type="text" placeholder="Ej: Firulais" value="' + escapeHTML(m.nombre) + '" oninput="nuevasMascotas[' + idx + '].nombre = this.value" style="margin-top:4px" />' +
-      '<div class="species-group">' +
-        '<button type="button" class="species-btn ' + (m.especie === 'Canino' ? 'selected-canino' : '') + '" onclick="nuevasMascotas[' + idx + '].especie=\'Canino\'; renderizarInputsNuevo()">🐶 Canino</button>' +
-        '<button type="button" class="species-btn ' + (m.especie === 'Felino' ? 'selected-felino' : '') + '" onclick="nuevasMascotas[' + idx + '].especie=\'Felino\'; renderizarInputsNuevo()">🐱 Felino</button>' +
-      '</div>' +
-    '</div>'
-  ).join("");
-}
-
-async function guardarNuevoPresencial() {
-  const dueno = document.getElementById("nuevo-dueno").value.trim();
-  const documento = document.getElementById("nuevo-doc").value.trim();
-  const telefono = document.getElementById("nuevo-tel").value.trim();
-  const bloque = document.getElementById("nuevo-bloque").value;
-
-  if (!dueno) { alert("Ingresa el nombre del dueño"); return; }
-
-  for (let i = 0; i < nuevasMascotas.length; i++) {
-    if (!nuevasMascotas[i].nombre.trim() || !nuevasMascotas[i].especie) {
-      alert("Completa nombre y especie para la Mascota " + (i + 1));
-      return;
-    }
-  }
-
-  if (MODO_PRUEBA) {
-    let yaAsignados = registrosGlobales.filter(r =>
-      (String(r.bloque || "").match(/\d+/) || [""])[0] === bloque && r.idPaciente !== ""
-    ).length;
-
-    const simulados = nuevasMascotas.map(m => {
-      yaAsignados++;
-      return {
-        nombre: m.nombre,
-        especie: m.especie,
-        id: "B" + bloque + "-" + String(yaAsignados).padStart(2, "0")
-      };
-    });
-
-    const resumen = simulados.map(a => a.nombre + " (" + a.especie + "): " + a.id + " → En espera").join("\n");
-    alert("🧪 [MODO PRUEBA - NO GUARDADO EN SHEETS]\n\nPacientes que se crearían:\n\n" + resumen);
-    return;
-  }
-
-  const btn = document.getElementById("btn-guardar-nuevo");
-  btn.disabled = true;
-  btn.textContent = "Registrando...";
-
-  try {
-    const resp = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        accion: "nuevo",
-        dueno: dueno,
-        documento: documento,
-        telefono: telefono,
-        bloque: bloque,
-        mascotas: nuevasMascotas
-      })
-    });
-    const json = await resp.json();
-
-    if (json.status === "ok") {
-      const resumen = json.asignados.map(a => a.nombre + " (" + a.especie + "): " + a.id + " → En espera").join("\n");
-      alert("✅ Paciente(s) registrado(s):\n\n" + resumen);
-      document.getElementById("nuevo-dueno").value = "";
-      document.getElementById("nuevo-doc").value = "";
-      document.getElementById("nuevo-tel").value = "";
-      document.getElementById("nuevo-cantidad").value = "1";
-      nuevasMascotas = [];
-      generarInputsNuevo();
-      cambiarTab("lista");
-      await cargarDatos();
-    } else {
-      alert("Error: " + json.mensaje);
-    }
-  } catch (err) {
-    alert("Error de conexión al guardar.");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Registrar y Generar ID(s)";
-  }
-}
-
-function escapeHTML(str) {
-  return String(str || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./sw.js");
-}
-</script>
-</body>
-</html>
+        '🐾 <strong>Mascota' + (tieneId ? '' : 's (' + r.cantidad + ')') + ':</strong> ' + escapeHTML(r.mascot
