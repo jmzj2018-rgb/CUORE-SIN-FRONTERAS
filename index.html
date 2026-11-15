@@ -21,12 +21,12 @@
     .controls { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
     input, select { padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; width: 100%; }
     .controls input { flex: 2; min-width: 200px; }
-    .controls select { flex: 1; min-width: 130px; }
+    .controls select { flex: 1; min-width: 150px; }
     .card { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-left: 5px solid #94a3b8; }
     .card.pendiente { border-left-color: #f59e0b; }
     .card.atendido { border-left-color: #10b981; }
     .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-    .badge { padding: 4px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; }
+    .badge { padding: 4px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
     .badge-bloque { background: #e2e8f0; color: #334155; }
     .badge-id { background: #d1fae5; color: #065f46; font-size: 0.95rem; }
     .meta { font-size: 0.9rem; color: #475569; margin: 6px 0; }
@@ -67,13 +67,13 @@
     <div class="controls">
       <input type="text" id="buscador" placeholder="Buscar por dueño, DOC, mascota o ID..." oninput="renderizarLista()" />
       <select id="filtro-bloque" onchange="renderizarLista()">
-        <option value="">Todos los bloques</option>
-        <option value="1">Bloque 1</option>
-        <option value="2">Bloque 2</option>
-        <option value="3">Bloque 3</option>
-        <option value="4">Bloque 4</option>
-        <option value="5">Bloque 5</option>
-        <option value="6">Bloque 6</option>
+        <option value="">Todos los horarios</option>
+        <option value="1">9:00 AM - 10:00 AM</option>
+        <option value="2">10:00 AM - 11:00 AM</option>
+        <option value="3">11:00 AM - 12:00 PM</option>
+        <option value="4">12:00 PM - 1:00 PM</option>
+        <option value="5">1:00 PM - 2:00 PM</option>
+        <option value="6">2:00 PM - 3:00 PM</option>
       </select>
       <select id="filtro-estado" onchange="renderizarLista()">
         <option value="todos">Todos los estados</option>
@@ -91,14 +91,14 @@
       <div class="form-group"><label>DOC</label><input type="text" id="nuevo-doc" /></div>
       <div class="form-group"><label>Teléfono</label><input type="tel" id="nuevo-tel" /></div>
       <div class="form-group">
-        <label>Bloque asignado</label>
+        <label>Horario asignado</label>
         <select id="nuevo-bloque">
-          <option value="1">Bloque 1</option>
-          <option value="2">Bloque 2</option>
-          <option value="3">Bloque 3</option>
-          <option value="4">Bloque 4</option>
-          <option value="5">Bloque 5</option>
-          <option value="6">Bloque 6</option>
+          <option value="1">9:00 AM - 10:00 AM (Bloque 1)</option>
+          <option value="2">10:00 AM - 11:00 AM (Bloque 2)</option>
+          <option value="3">11:00 AM - 12:00 PM (Bloque 3)</option>
+          <option value="4">12:00 PM - 1:00 PM (Bloque 4)</option>
+          <option value="5">1:00 PM - 2:00 PM (Bloque 5)</option>
+          <option value="6">2:00 PM - 3:00 PM (Bloque 6)</option>
         </select>
       </div>
       <div class="form-group">
@@ -126,6 +126,21 @@
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbzrmVxXa40QCbtzrB06XlYjblnramZOkF6PqWTIq2-e6ce0TTTQCEhYl5sVqlckmCUC/exec";
 const MODO_PRUEBA = true; // Cambia a false el día del evento
+
+const HORARIOS_BLOQUE = {
+  "1": "9:00 - 10:00 AM",
+  "2": "10:00 - 11:00 AM",
+  "3": "11:00 AM - 12:00 PM",
+  "4": "12:00 - 1:00 PM",
+  "5": "1:00 - 2:00 PM",
+  "6": "2:00 - 3:00 PM"
+};
+
+function obtenerEtiquetaHorario(valorBloque) {
+  const num = (String(valorBloque || "").match(/\d+/) || [""])[0];
+  if (num && HORARIOS_BLOQUE[num]) return HORARIOS_BLOQUE[num];
+  return valorBloque ? String(valorBloque) : "Sin horario";
+}
 
 let registrosGlobales = [];
 let registroSeleccionado = null;
@@ -193,8 +208,7 @@ function renderizarLista() {
 
   contenedor.innerHTML = filtrados.map(r => {
     const atendido = r.idPaciente !== "";
-    const numBloque = (String(r.bloque || "").match(/\d+/) || [r.bloque])[0];
-    const etiquetaBloque = numBloque ? "B" + escapeHTML(numBloque) : "Sin bloque";
+    const etiquetaHorario = escapeHTML(obtenerEtiquetaHorario(r.bloque));
 
     return '<div class="card ' + (atendido ? 'atendido' : 'pendiente') + '">' +
       '<div class="card-header">' +
@@ -202,7 +216,7 @@ function renderizarLista() {
           '<strong>' + escapeHTML(r.dueno) + '</strong>' +
           '<div class="meta">DOC: ' + escapeHTML(r.documento) + ' • Tel: ' + escapeHTML(r.telefono) + '</div>' +
         '</div>' +
-        '<span class="badge badge-bloque">' + etiquetaBloque + '</span>' +
+        '<span class="badge badge-bloque">🕒 ' + etiquetaHorario + '</span>' +
       '</div>' +
       '<div class="meta">' +
         '🐾 <strong>Mascotas (' + r.cantidad + '):</strong> ' + escapeHTML(r.mascotas) +
@@ -241,10 +255,10 @@ function abrirModalCheckin(numFila) {
   const nombres = separarNombresMascotas(registroSeleccionado.mascotas, registroSeleccionado.cantidad);
   mascotasModal = nombres.map(n => ({ nombre: n, especie: "" }));
 
-  const numBloque = (String(registroSeleccionado.bloque || "").match(/\d+/) || [registroSeleccionado.bloque])[0];
+  const horarioTexto = obtenerEtiquetaHorario(registroSeleccionado.bloque);
   document.getElementById("modal-titulo").textContent = "Check-in: " + registroSeleccionado.dueno;
   document.getElementById("modal-subtitulo").textContent =
-    "Bloque " + numBloque + " • Declaró " + registroSeleccionado.cantidad + " mascota(s). Verifica nombre y especie:";
+    "Horario: " + horarioTexto + " • Declaró " + registroSeleccionado.cantidad + " mascota(s). Verifica nombre y especie:";
 
   renderizarMascotasModal();
   document.getElementById("modal-checkin").style.display = "flex";
