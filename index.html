@@ -10,26 +10,42 @@
     :root { --primary: #0f766e; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; }
     * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { margin: 0; background: var(--bg); color: var(--text); padding-bottom: 40px; }
-    header { background: var(--primary); color: white; padding: 16px; position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
-    header h1 { margin: 0; font-size: 1.15rem; }
-    .btn-refresh { background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; }
-    .banner-prueba { background: #fef3c7; color: #92400e; text-align: center; padding: 8px 12px; font-size: 0.85rem; font-weight: 700; border-bottom: 1px solid #f59e0b; }
-    .container { max-width: 720px; margin: 0 auto; padding: 16px; }
-    .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
-    .stat-box { background: white; border-radius: 10px; padding: 10px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.06); border-top: 3px solid #cbd5e1; }
-    .stat-box.espera { border-top-color: #0284c7; }
-    .stat-box.consulta { border-top-color: #7c3aed; }
-    .stat-box.atendido { border-top-color: #10b981; }
-    .stat-num { font-size: 1.25rem; font-weight: 800; display: block; }
-    .stat-label { font-size: 0.72rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
-    .tab { flex: 1; padding: 10px; border: 1px solid #cbd5e1; background: white; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    header { background: var(--primary); color: white; padding: 14px 16px; position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { margin: 0; font-size: 1.1rem; }
+    .btn-refresh { background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+    .banner-prueba { background: #fef3c7; color: #92400e; text-align: center; padding: 7px 12px; font-size: 0.82rem; font-weight: 700; border-bottom: 1px solid #f59e0b; }
+    .container { max-width: 720px; margin: 0 auto; padding: 14px; }
+
+    /* Botones interactivos de estado */
+    .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+    .stat-btn { background: white; border: 2px solid transparent; border-radius: 12px; padding: 10px 6px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.07); cursor: pointer; transition: all 0.15s ease; }
+    .stat-btn:active { transform: scale(0.97); }
+    .stat-btn.espera { border-top: 4px solid #0284c7; }
+    .stat-btn.consulta { border-top: 4px solid #7c3aed; }
+    .stat-btn.atendido { border-top: 4px solid #10b981; }
+
+    .stat-btn.espera.active { background: #e0f2fe; border-color: #0284c7; }
+    .stat-btn.consulta.active { background: #ede9fe; border-color: #7c3aed; }
+    .stat-btn.atendido.active { background: #d1fae5; border-color: #10b981; }
+
+    .stat-num { font-size: 1.4rem; font-weight: 800; display: block; color: var(--text); }
+    .stat-label { font-size: 0.72rem; color: #475569; font-weight: 700; text-transform: uppercase; }
+
+    /* Pestañas principales */
+    .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+    .tab { flex: 1; padding: 11px 8px; border: 2px solid #cbd5e1; background: white; border-radius: 10px; font-weight: 700; font-size: 0.9rem; cursor: pointer; color: #334155; }
     .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
-    .controls { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-    input, select { padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; width: 100%; }
-    .controls input { flex: 2; min-width: 200px; }
-    .controls select { flex: 1; min-width: 145px; }
-    .card { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-left: 5px solid #94a3b8; }
+
+    .view-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .view-title { font-size: 0.9rem; font-weight: 700; color: #475569; margin: 0; }
+    .link-todos { background: none; border: none; color: var(--primary); font-weight: 700; font-size: 0.82rem; cursor: pointer; text-decoration: underline; padding: 0; }
+
+    .controls { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    input, select { padding: 11px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; width: 100%; background: white; }
+    .controls input { flex: 2; min-width: 190px; }
+    .controls select { flex: 1; min-width: 150px; }
+
+    .card { background: var(--card); border-radius: 12px; padding: 15px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-left: 5px solid #94a3b8; }
     .card.pendiente { border-left-color: #f59e0b; }
     .card.espera { border-left-color: #0284c7; }
     .card.consulta { border-left-color: #7c3aed; background: #faf5ff; }
@@ -41,6 +57,7 @@
     .badge-espera { background: #e0f2fe; color: #0369a1; }
     .badge-consulta { background: #ede9fe; color: #6d28d9; }
     .badge-atendido { background: #d1fae5; color: #065f46; }
+    .badge-pendiente { background: #fef3c7; color: #92400e; }
     .meta { font-size: 0.9rem; color: #475569; margin: 6px 0; }
     .btn-primary, .btn-consulta, .btn-atendido { color: white; border: none; padding: 11px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; font-size: 0.95rem; }
     .btn-primary { background: var(--primary); }
@@ -65,37 +82,42 @@
 
 <header>
   <h1>🐾 Control de Turnos - CUORE</h1>
-  <button class="btn-refresh" onclick="cargarDatos()">↻ Reiniciar / Actualizar</button>
+  <button class="btn-refresh" onclick="cargarDatos()">↻ Actualizar</button>
 </header>
 
 <div id="banner-prueba" class="banner-prueba hidden">
-  🧪 MODO PRUEBA INTERACTIVO: Simula todo el flujo en pantalla sin modificar Google Sheets
+  🧪 MODO PRUEBA INTERACTIVO: Toca los botones de estado para simular el flujo
 </div>
 
 <div class="container">
   <div class="stats-bar">
-    <div class="stat-box espera">
+    <button type="button" class="stat-btn espera" id="btn-vista-espera" onclick="seleccionarVista('espera')">
       <span class="stat-num" id="count-espera">0</span>
-      <span class="stat-label">En Espera</span>
-    </div>
-    <div class="stat-box consulta">
+      <span class="stat-label">⏳ En Espera</span>
+    </button>
+    <button type="button" class="stat-btn consulta" id="btn-vista-consulta" onclick="seleccionarVista('consulta')">
       <span class="stat-num" id="count-consulta">0</span>
-      <span class="stat-label">En Consulta</span>
-    </div>
-    <div class="stat-box atendido">
+      <span class="stat-label">🩺 En Consulta</span>
+    </button>
+    <button type="button" class="stat-btn atendido" id="btn-vista-atendido" onclick="seleccionarVista('atendido')">
       <span class="stat-num" id="count-atendido">0</span>
-      <span class="stat-label">Atendidos</span>
-    </div>
+      <span class="stat-label">✅ Atendidos</span>
+    </button>
   </div>
 
   <div class="tabs">
-    <button class="tab active" id="tab-lista" onclick="cambiarTab('lista')">Flujo de Pacientes</button>
-    <button class="tab" id="tab-nuevo" onclick="cambiarTab('nuevo')">+ Nuevo Sin Inscripción</button>
+    <button type="button" class="tab active" id="tab-citas" onclick="seleccionarVista('pendiente')">📋 Citas / Por Llegar (<span id="count-pendiente">0</span>)</button>
+    <button type="button" class="tab" id="tab-nuevo" onclick="seleccionarVista('nuevo')">+ Nuevo Sin Cita</button>
   </div>
 
   <div id="vista-lista">
+    <div class="view-header">
+      <p class="view-title" id="titulo-vista-actual">Mostrando: Citas pendientes de llegada</p>
+      <button type="button" class="link-todos" onclick="seleccionarVista('todos')">Ver todos</button>
+    </div>
+
     <div class="controls">
-      <input type="text" id="buscador" placeholder="Buscar por dueño, DOC, mascota o ID..." oninput="renderizarLista()" />
+      <input type="text" id="buscador" placeholder="Buscar dueño, DOC, mascota o ID..." oninput="renderizarLista()" />
       <select id="filtro-bloque" onchange="renderizarLista()">
         <option value="">Todos los horarios</option>
         <option value="1">9:00 AM - 10:00 AM</option>
@@ -104,14 +126,6 @@
         <option value="4">12:00 PM - 1:00 PM</option>
         <option value="5">1:00 PM - 2:00 PM</option>
         <option value="6">2:00 PM - 3:00 PM</option>
-      </select>
-      <select id="filtro-estado" onchange="renderizarLista()">
-        <option value="todos">Todos los estados</option>
-        <option value="pendiente">1. Pendiente de llegada</option>
-        <option value="espera">2. En espera de atención</option>
-        <option value="consulta">3. En consulta (revisión)</option>
-        <option value="atendido">4. Atendido (finalizado)</option>
-        <option value="activos">Activos (Espera + Consulta)</option>
       </select>
     </div>
     <div id="contenedor-tarjetas"><p>Iniciando aplicación...</p></div>
@@ -139,7 +153,7 @@
         <input type="number" id="nuevo-cantidad" value="1" min="1" max="10" onchange="generarInputsNuevo()" />
       </div>
       <div id="nuevo-mascotas-container"></div>
-      <button class="btn-primary" id="btn-guardar-nuevo" onclick="guardarNuevoPresencial()">Registrar y Generar ID(s)</button>
+      <button type="button" class="btn-primary" id="btn-guardar-nuevo" onclick="guardarNuevoPresencial()">Registrar y Generar ID(s)</button>
     </div>
   </div>
 </div>
@@ -150,8 +164,8 @@
     <p class="meta" id="modal-subtitulo"></p>
     <div id="modal-mascotas-lista"></div>
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
-      <button class="btn-primary" style="margin-top:0; flex:2" id="btn-confirmar-checkin" onclick="confirmarCheckin()">Asignar ID(s)</button>
+      <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+      <button type="button" class="btn-primary" style="margin-top:0; flex:2" id="btn-confirmar-checkin" onclick="confirmarCheckin()">Asignar ID(s)</button>
     </div>
   </div>
 </div>
@@ -175,6 +189,7 @@ function obtenerEtiquetaHorario(valorBloque) {
   return valorBloque ? String(valorBloque) : "Sin horario";
 }
 
+let vistaActual = "pendiente"; // "pendiente" | "espera" | "consulta" | "atendido" | "todos" | "nuevo"
 let registrosGlobales = [];
 let registroSeleccionado = null;
 let mascotasModal = [];
@@ -185,26 +200,59 @@ window.addEventListener("DOMContentLoaded", () => {
   if (MODO_PRUEBA) {
     document.getElementById("banner-prueba").classList.remove("hidden");
   }
-  document.getElementById("filtro-estado").value = "pendiente";
   cargarDatos();
   generarInputsNuevo();
 });
 
-function cambiarTab(tab) {
-  document.getElementById("tab-lista").classList.toggle("active", tab === "lista");
-  document.getElementById("tab-nuevo").classList.toggle("active", tab === "nuevo");
-  document.getElementById("vista-lista").classList.toggle("hidden", tab !== "lista");
-  document.getElementById("vista-nuevo").classList.toggle("hidden", tab !== "nuevo");
+function seleccionarVista(vista) {
+  vistaActual = vista;
+
+  // Quitar estado activo de todos los botones superiores y pestañas
+  document.getElementById("btn-vista-espera").classList.remove("active");
+  document.getElementById("btn-vista-consulta").classList.remove("active");
+  document.getElementById("btn-vista-atendido").classList.remove("active");
+  document.getElementById("tab-citas").classList.remove("active");
+  document.getElementById("tab-nuevo").classList.remove("active");
+
+  if (vista === "nuevo") {
+    document.getElementById("tab-nuevo").classList.add("active");
+    document.getElementById("vista-lista").classList.add("hidden");
+    document.getElementById("vista-nuevo").classList.remove("hidden");
+    return;
+  }
+
+  document.getElementById("vista-nuevo").classList.add("hidden");
+  document.getElementById("vista-lista").classList.remove("hidden");
+
+  const titulos = {
+    pendiente: "Mostrando: 📋 Citas pendientes de llegada",
+    espera: "Mostrando: ⏳ Pacientes en espera de atención",
+    consulta: "Mostrando: 🩺 Pacientes en consulta (revisando)",
+    atendido: "Mostrando: ✅ Pacientes ya atendidos",
+    todos: "Mostrando: Todos los registros del evento"
+  };
+  document.getElementById("titulo-vista-actual").textContent = titulos[vista] || "";
+
+  if (vista === "espera") document.getElementById("btn-vista-espera").classList.add("active");
+  else if (vista === "consulta") document.getElementById("btn-vista-consulta").classList.add("active");
+  else if (vista === "atendido") document.getElementById("btn-vista-atendido").classList.add("active");
+  else if (vista === "pendiente") document.getElementById("tab-citas").classList.add("active");
+
+  renderizarLista();
 }
 
 function actualizarContadores() {
-  let espera = 0, consulta = 0, atendido = 0;
+  let pendiente = 0, espera = 0, consulta = 0, atendido = 0;
   registrosGlobales.forEach(r => {
-    if (!r.idPaciente) return;
+    if (!r.idPaciente) {
+      pendiente++;
+      return;
+    }
     if (r.estado === "En consulta") consulta++;
     else if (r.estado === "Atendido") atendido++;
     else espera++;
   });
+  document.getElementById("count-pendiente").textContent = pendiente;
   document.getElementById("count-espera").textContent = espera;
   document.getElementById("count-consulta").textContent = consulta;
   document.getElementById("count-atendido").textContent = atendido;
@@ -232,18 +280,16 @@ async function cargarDatos() {
 function renderizarLista() {
   const texto = document.getElementById("buscador").value.toLowerCase().trim();
   const bloqueFiltro = document.getElementById("filtro-bloque").value;
-  const estadoFiltro = document.getElementById("filtro-estado").value;
   const contenedor = document.getElementById("contenedor-tarjetas");
 
   const filtrados = registrosGlobales.filter(r => {
     const tieneId = r.idPaciente !== "";
     const estadoReal = !tieneId ? "pendiente" : (r.estado || "En espera");
 
-    if (estadoFiltro === "pendiente" && tieneId) return false;
-    if (estadoFiltro === "espera" && estadoReal !== "En espera") return false;
-    if (estadoFiltro === "consulta" && estadoReal !== "En consulta") return false;
-    if (estadoFiltro === "atendido" && estadoReal !== "Atendido") return false;
-    if (estadoFiltro === "activos" && (estadoReal !== "En espera" && estadoReal !== "En consulta")) return false;
+    if (vistaActual === "pendiente" && tieneId) return false;
+    if (vistaActual === "espera" && estadoReal !== "En espera") return false;
+    if (vistaActual === "consulta" && estadoReal !== "En consulta") return false;
+    if (vistaActual === "atendido" && estadoReal !== "Atendido") return false;
 
     const numBloque = (String(r.bloque || "").match(/\d+/) || [""])[0];
     if (bloqueFiltro && numBloque !== bloqueFiltro) return false;
@@ -256,7 +302,7 @@ function renderizarLista() {
   });
 
   if (filtrados.length === 0) {
-    contenedor.innerHTML = "<p>No hay pacientes en esta vista.</p>";
+    contenedor.innerHTML = "<p style='color:#64748b; text-align:center; padding:20px 0;'>No hay pacientes en esta sección.</p>";
     return;
   }
 
@@ -266,20 +312,20 @@ function renderizarLista() {
     const etiquetaHorario = escapeHTML(obtenerEtiquetaHorario(r.bloque));
 
     let claseCard = "pendiente";
-    let badgeEstado = "";
+    let badgeEstado = '<span class="badge badge-pendiente">Sin llegar</span>';
     let botonAccion = "";
 
     if (!tieneId) {
       claseCard = "pendiente";
-      botonAccion = '<button class="btn-primary" onclick="abrirModalCheckin(' + r.fila + ')">Registrar Llegada y Especie</button>';
+      botonAccion = '<button type="button" class="btn-primary" onclick="abrirModalCheckin(' + r.fila + ')">Registrar Llegada y Especie</button>';
     } else if (estadoReal === "En espera") {
       claseCard = "espera";
-      badgeEstado = '<span class="badge badge-espera">⏳ En espera de atención</span>';
-      botonAccion = '<button class="btn-consulta" onclick="avanzarEstado(' + r.fila + ', \'En consulta\', this)">🩺 Pasar a Consulta</button>';
+      badgeEstado = '<span class="badge badge-espera">⏳ En espera</span>';
+      botonAccion = '<button type="button" class="btn-consulta" onclick="avanzarEstado(' + r.fila + ', \'En consulta\', this)">🩺 Pasar a Consulta</button>';
     } else if (estadoReal === "En consulta") {
       claseCard = "consulta";
-      badgeEstado = '<span class="badge badge-consulta">🩺 En consulta (revisando)</span>';
-      botonAccion = '<button class="btn-atendido" onclick="avanzarEstado(' + r.fila + ', \'Atendido\', this)">✅ Marcar como Atendido</button>';
+      badgeEstado = '<span class="badge badge-consulta">🩺 En consulta</span>';
+      botonAccion = '<button type="button" class="btn-atendido" onclick="avanzarEstado(' + r.fila + ', \'Atendido\', this)">✅ Marcar como Atendido</button>';
     } else {
       claseCard = "atendido";
       badgeEstado = '<span class="badge badge-atendido">✅ Atendido</span>';
@@ -297,13 +343,10 @@ function renderizarLista() {
         '🐾 <strong>Mascota' + (tieneId ? '' : 's (' + r.cantidad + ')') + ':</strong> ' + escapeHTML(r.mascotas) +
         (r.especie ? ' • <strong>' + escapeHTML(r.especie) + '</strong>' : '') +
       '</div>' +
-      (tieneId
-        ? '<div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">' +
-            '<span class="badge badge-id">' + escapeHTML(r.idPaciente) + '</span>' +
-            badgeEstado +
-          '</div>'
-        : ''
-      ) +
+      '<div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">' +
+        (tieneId ? '<span class="badge badge-id">' + escapeHTML(r.idPaciente) + '</span>' : '') +
+        badgeEstado +
+      '</div>' +
       botonAccion +
     '</div>';
   }).join("");
@@ -445,12 +488,11 @@ async function confirmarCheckin() {
       }
     });
 
-    const resumen = simulados.map(a => a.nombre + " (" + a.especie + "): " + a.id + " → En espera").join("\n");
-    alert("🧪 [SIMULADO EN PANTALLA]\n\n" + resumen + "\n\nCambia el filtro a '2. En espera de atención' o 'Activos' para continuar la prueba.");
+    const resumen = simulados.map(a => a.nombre + " (" + a.especie + "): " + a.id).join("\n");
+    alert("✅ Turno(s) asignado(s) (Simulación):\n\n" + resumen);
     cerrarModal();
     actualizarContadores();
-    document.getElementById("filtro-estado").value = "activos";
-    renderizarLista();
+    seleccionarVista("espera");
     return;
   }
 
@@ -470,10 +512,11 @@ async function confirmarCheckin() {
     const json = await resp.json();
 
     if (json.status === "ok") {
-      const resumen = json.asignados.map(a => a.nombre + " (" + a.especie + "): " + a.id + " → En espera").join("\n");
+      const resumen = json.asignados.map(a => a.nombre + " (" + a.especie + "): " + a.id).join("\n");
       alert("✅ Turnos asignados:\n\n" + resumen);
       cerrarModal();
       await cargarDatos();
+      seleccionarVista("espera");
     } else {
       alert("Error: " + json.mensaje);
     }
@@ -547,8 +590,8 @@ async function guardarNuevoPresencial() {
       return { nombre: m.nombre, especie: m.especie, id: nuevoId };
     });
 
-    const resumen = simulados.map(a => a.nombre + " (" + a.especie + "): " + a.id + " → En espera").join("\n");
-    alert("🧪 [SIMULADO EN PANTALLA]\n\n" + resumen);
+    const resumen = simulados.map(a => a.nombre + " (" + a.especie + "): " + a.id).join("\n");
+    alert("✅ Paciente(s) creado(s) (Simulación):\n\n" + resumen);
     document.getElementById("nuevo-dueno").value = "";
     document.getElementById("nuevo-doc").value = "";
     document.getElementById("nuevo-tel").value = "";
@@ -556,9 +599,7 @@ async function guardarNuevoPresencial() {
     nuevasMascotas = [];
     generarInputsNuevo();
     actualizarContadores();
-    document.getElementById("filtro-estado").value = "activos";
-    cambiarTab("lista");
-    renderizarLista();
+    seleccionarVista("espera");
     return;
   }
 
@@ -581,7 +622,7 @@ async function guardarNuevoPresencial() {
     const json = await resp.json();
 
     if (json.status === "ok") {
-      const resumen = json.asignados.map(a => a.nombre + " (" + a.especie + "): " + a.id + " → En espera").join("\n");
+      const resumen = json.asignados.map(a => a.nombre + " (" + a.especie + "): " + a.id).join("\n");
       alert("✅ Paciente(s) registrado(s):\n\n" + resumen);
       document.getElementById("nuevo-dueno").value = "";
       document.getElementById("nuevo-doc").value = "";
@@ -589,8 +630,8 @@ async function guardarNuevoPresencial() {
       document.getElementById("nuevo-cantidad").value = "1";
       nuevasMascotas = [];
       generarInputsNuevo();
-      cambiarTab("lista");
       await cargarDatos();
+      seleccionarVista("espera");
     } else {
       alert("Error: " + json.mensaje);
     }
