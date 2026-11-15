@@ -36,9 +36,11 @@
     .tab { flex: 1; padding: 11px 8px; border: 2px solid #cbd5e1; background: white; border-radius: 10px; font-weight: 700; font-size: 0.9rem; cursor: pointer; color: #334155; }
     .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-    .view-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .view-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; flex-wrap: wrap; }
     .view-title { font-size: 0.9rem; font-weight: 700; color: #475569; margin: 0; }
+    .quick-links { display: flex; gap: 12px; align-items: center; }
     .link-todos { background: none; border: none; color: var(--primary); font-weight: 700; font-size: 0.82rem; cursor: pointer; text-decoration: underline; padding: 0; }
+    .link-cancelados { background: none; border: none; color: #b91c1c; font-weight: 700; font-size: 0.82rem; cursor: pointer; text-decoration: underline; padding: 0; }
 
     .controls { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
     input, select { padding: 11px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; width: 100%; background: white; }
@@ -50,6 +52,7 @@
     .card.espera { border-left-color: #0284c7; }
     .card.consulta { border-left-color: #7c3aed; background: #faf5ff; }
     .card.atendido { border-left-color: #10b981; }
+    .card.cancelado { border-left-color: #ef4444; background: #fef2f2; }
     .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
     .badge { padding: 4px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; display: inline-block; }
     .badge-bloque { background: #e2e8f0; color: #334155; }
@@ -58,11 +61,15 @@
     .badge-consulta { background: #ede9fe; color: #6d28d9; }
     .badge-atendido { background: #d1fae5; color: #065f46; }
     .badge-pendiente { background: #fef3c7; color: #92400e; }
+    .badge-cancelado { background: #fee2e2; color: #b91c1c; }
     .meta { font-size: 0.9rem; color: #475569; margin: 6px 0; }
-    .btn-primary, .btn-consulta, .btn-atendido { color: white; border: none; padding: 11px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; font-size: 0.95rem; }
+    .btn-primary, .btn-consulta, .btn-atendido, .btn-reintegrar { color: white; border: none; padding: 11px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; font-size: 0.95rem; }
     .btn-primary { background: var(--primary); }
     .btn-consulta { background: #7c3aed; }
     .btn-atendido { background: #059669; }
+    .btn-reintegrar { background: #0284c7; }
+    .btn-baja { background: transparent; color: #b91c1c; border: 1px solid #fca5a5; padding: 8px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 8px; font-size: 0.82rem; }
+    .btn-baja:hover { background: #fee2e2; }
     .btn-add-pet { background: #f1f5f9; color: #0f766e; border: 2px dashed #0f766e; padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 4px; font-size: 0.9rem; }
     .btn-remove-pet { background: #fee2e2; color: #b91c1c; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
     button:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -116,7 +123,10 @@
   <div id="vista-lista">
     <div class="view-header">
       <p class="view-title" id="titulo-vista-actual">Mostrando: 📋 Citas pendientes de llegada</p>
-      <button type="button" class="link-todos" onclick="seleccionarVista('todos')">Ver todos</button>
+      <div class="quick-links">
+        <button type="button" class="link-cancelados" onclick="seleccionarVista('cancelado')">✕ Cancelados (<span id="count-cancelado">0</span>)</button>
+        <button type="button" class="link-todos" onclick="seleccionarVista('todos')">Ver todos</button>
+      </div>
     </div>
 
     <div class="controls">
@@ -232,6 +242,7 @@ function seleccionarVista(vista) {
     espera: "Mostrando: ⏳ Pacientes en espera de atención",
     consulta: "Mostrando: 🩺 Pacientes en consulta (revisando)",
     atendido: "Mostrando: ✅ Pacientes ya atendidos",
+    cancelado: "Mostrando: ✕ Turnos cancelados / retirados",
     todos: "Mostrando: Todos los registros del evento"
   };
   document.getElementById("titulo-vista-actual").textContent = titulos[vista] || "";
@@ -245,13 +256,14 @@ function seleccionarVista(vista) {
 }
 
 function actualizarContadores() {
-  let pendiente = 0, espera = 0, consulta = 0, atendido = 0;
+  let pendiente = 0, espera = 0, consulta = 0, atendido = 0, cancelado = 0;
   registrosGlobales.forEach(r => {
     if (!r.idPaciente) {
       pendiente++;
       return;
     }
-    if (r.estado === "En consulta") consulta++;
+    if (r.estado === "Cancelado") cancelado++;
+    else if (r.estado === "En consulta") consulta++;
     else if (r.estado === "Atendido") atendido++;
     else espera++;
   });
@@ -259,6 +271,7 @@ function actualizarContadores() {
   document.getElementById("count-espera").textContent = espera;
   document.getElementById("count-consulta").textContent = consulta;
   document.getElementById("count-atendido").textContent = atendido;
+  document.getElementById("count-cancelado").textContent = cancelado;
 }
 
 async function cargarDatos() {
@@ -293,6 +306,7 @@ function renderizarLista() {
     if (vistaActual === "espera" && estadoReal !== "En espera") return false;
     if (vistaActual === "consulta" && estadoReal !== "En consulta") return false;
     if (vistaActual === "atendido" && estadoReal !== "Atendido") return false;
+    if (vistaActual === "cancelado" && estadoReal !== "Cancelado") return false;
 
     const numBloque = (String(r.bloque || "").match(/\d+/) || [""])[0];
     if (bloqueFiltro && numBloque !== bloqueFiltro) return false;
@@ -324,11 +338,19 @@ function renderizarLista() {
     } else if (estadoReal === "En espera") {
       claseCard = "espera";
       badgeEstado = '<span class="badge badge-espera">⏳ En espera</span>';
-      botonAccion = '<button type="button" class="btn-consulta" onclick="avanzarEstado(' + r.fila + ', \'En consulta\', this)">🩺 Pasar a Consulta</button>';
+      botonAccion =
+        '<button type="button" class="btn-consulta" onclick="avanzarEstado(' + r.fila + ', \'En consulta\', this)">🩺 Pasar a Consulta</button>' +
+        '<button type="button" class="btn-baja" onclick="cancelarTurno(' + r.fila + ', this)">✕ Cancelar / Retirado</button>';
     } else if (estadoReal === "En consulta") {
       claseCard = "consulta";
       badgeEstado = '<span class="badge badge-consulta">🩺 En consulta</span>';
-      botonAccion = '<button type="button" class="btn-atendido" onclick="avanzarEstado(' + r.fila + ', \'Atendido\', this)">✅ Marcar como Atendido</button>';
+      botonAccion =
+        '<button type="button" class="btn-atendido" onclick="avanzarEstado(' + r.fila + ', \'Atendido\', this)">✅ Marcar como Atendido</button>' +
+        '<button type="button" class="btn-baja" onclick="cancelarTurno(' + r.fila + ', this)">✕ Cancelar / Retirado</button>';
+    } else if (estadoReal === "Cancelado") {
+      claseCard = "cancelado";
+      badgeEstado = '<span class="badge badge-cancelado">✕ Cancelado / Retirado</span>';
+      botonAccion = '<button type="button" class="btn-reintegrar" onclick="reintegrarTurno(' + r.fila + ', this)">↩ Reintegrar a En Espera</button>';
     } else {
       claseCard = "atendido";
       badgeEstado = '<span class="badge badge-atendido">✅ Atendido</span>';
@@ -353,6 +375,18 @@ function renderizarLista() {
       botonAccion +
     '</div>';
   }).join("");
+}
+
+function cancelarTurno(numFila, btnEl) {
+  const reg = registrosGlobales.find(r => r.fila === numFila);
+  const nombre = reg ? reg.mascotas : "esta mascota";
+  if (!confirm("¿Cancelar el turno de \"" + nombre + "\" y retirarlo del flujo activo?\n\nPodrás reintegrarlo después desde 'Cancelados' si el dueño regresa.")) return;
+  avanzarEstado(numFila, "Cancelado", btnEl);
+}
+
+async function reintegrarTurno(numFila, btnEl) {
+  await avanzarEstado(numFila, "En espera", btnEl);
+  seleccionarVista("espera");
 }
 
 async function avanzarEstado(numFila, nuevoEstado, btnEl) {
