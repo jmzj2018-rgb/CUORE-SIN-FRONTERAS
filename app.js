@@ -1,5 +1,5 @@
 // ⚠️ REEMPLAZA ESTA URL CON LA URL DE TU APLICACIÓN WEB DE APPS SCRIPT
-const API_URL = "PEGA_AQUI_TU_URL_DE_APPS_SCRIPT";
+const API_URL = "https://script.google.com/macros/s/AKfycbzrmVxXa40QCbtzrB06XlYjblnramZOkF6PqWTIq2-e6ce0TTTQCEhYl5sVqlckmCUC/exec";
 
 let registrosGlobales = [];
 let registroSeleccionado = null;
