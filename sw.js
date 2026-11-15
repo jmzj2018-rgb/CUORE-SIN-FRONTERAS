@@ -1,5 +1,5 @@
 const CACHE_NAME = "turnos-vet-v2"; // Subir el número fuerza renovación
-const ASSETS = ["./", "./index.html", "./app.js", "./manifest.json"];
+const ASSETS = ["./", "./index.html", "./manifest.json"];
 
 self.addEventListener("install", e => {
   self.skipWaiting(); // Activa el nuevo SW inmediatamente sin esperar
