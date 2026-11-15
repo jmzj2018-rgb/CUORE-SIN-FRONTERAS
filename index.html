@@ -43,7 +43,7 @@
     .link-cancelados { background: none; border: none; color: #b91c1c; font-weight: 700; font-size: 0.82rem; cursor: pointer; text-decoration: underline; padding: 0; }
 
     .controls { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
-    input, select { padding: 11px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; width: 100%; background: white; }
+    input, select, textarea { padding: 11px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; width: 100%; background: white; }
     .controls input { flex: 2; min-width: 190px; }
     .controls select { flex: 1; min-width: 150px; }
 
@@ -61,13 +61,14 @@
     .badge-consulta { background: #ede9fe; color: #6d28d9; }
     .badge-atendido { background: #d1fae5; color: #065f46; }
     .badge-pendiente { background: #fef3c7; color: #92400e; }
-    .badge-cancelado { background: #fee2e2; color: #b91c1c; }
+    .badge-cancelado { background: #fee2e2; color: #b91c1c; white-space: normal; line-height: 1.3; }
     .meta { font-size: 0.9rem; color: #475569; margin: 6px 0; }
-    .btn-primary, .btn-consulta, .btn-atendido, .btn-reintegrar { color: white; border: none; padding: 11px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; font-size: 0.95rem; }
+    .btn-primary, .btn-consulta, .btn-atendido, .btn-reintegrar, .btn-danger { color: white; border: none; padding: 11px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; font-size: 0.95rem; }
     .btn-primary { background: var(--primary); }
     .btn-consulta { background: #7c3aed; }
     .btn-atendido { background: #059669; }
     .btn-reintegrar { background: #0284c7; }
+    .btn-danger { background: #dc2626; }
     .btn-baja { background: transparent; color: #b91c1c; border: 1px solid #fca5a5; padding: 8px 12px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 8px; font-size: 0.82rem; }
     .btn-baja:hover { background: #fee2e2; }
     .btn-add-pet { background: #f1f5f9; color: #0f766e; border: 2px dashed #0f766e; padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 4px; font-size: 0.9rem; }
@@ -78,9 +79,11 @@
     .pet-row { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 10px; background: #f8fafc; }
     .pet-row-header { display: flex; justify-content: space-between; align-items: center; }
     .species-group { display: flex; gap: 8px; margin-top: 8px; }
-    .species-btn { flex: 1; padding: 10px; border: 2px solid #cbd5e1; border-radius: 8px; background: white; font-weight: 600; cursor: pointer; }
+    .species-btn, .reason-btn { flex: 1; padding: 11px 10px; border: 2px solid #cbd5e1; border-radius: 8px; background: white; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
     .species-btn.selected-canino { border-color: #0284c7; background: #e0f2fe; color: #0369a1; }
     .species-btn.selected-felino { border-color: #9333ea; background: #f3e8ff; color: #7e22ce; }
+    .reason-btn.selected-agresion { border-color: #dc2626; background: #fee2e2; color: #991b1b; }
+    .reason-btn.selected-otros { border-color: #d97706; background: #fef3c7; color: #92400e; }
     .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
     .btn-cancel { background: #e2e8f0; color: #334155; border: none; padding: 12px; border-radius: 8px; font-weight: 600; flex: 1; cursor: pointer; }
     .hidden { display: none; }
@@ -171,6 +174,7 @@
   </div>
 </div>
 
+<!-- Modal Check-in -->
 <div class="modal-backdrop" id="modal-checkin">
   <div class="modal">
     <h3 style="margin-top:0" id="modal-titulo">Confirmar Llegada</h3>
@@ -180,6 +184,32 @@
     <div class="modal-actions">
       <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
       <button type="button" class="btn-primary" style="margin-top:0; flex:2" id="btn-confirmar-checkin" onclick="confirmarCheckin()">Asignar ID(s)</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Cancelación con Motivo -->
+<div class="modal-backdrop" id="modal-cancelacion">
+  <div class="modal">
+    <h3 style="margin-top:0; color:#b91c1c;" id="cancel-modal-titulo">Cancelar / Retirar Turno</h3>
+    <p class="meta" id="cancel-modal-subtitulo"></p>
+
+    <div class="form-group" style="margin-top:12px;">
+      <label>Selecciona el motivo de cancelación:</label>
+      <div class="species-group">
+        <button type="button" class="reason-btn" id="btn-motivo-agresion" onclick="seleccionarMotivoCancelacion('Agresión')">⚠️ Agresión</button>
+        <button type="button" class="reason-btn" id="btn-motivo-otros" onclick="seleccionarMotivoCancelacion('Otros motivos')">📝 Otros motivos</button>
+      </div>
+    </div>
+
+    <div class="form-group hidden" id="grupo-detalle-otros" style="margin-top:12px;">
+      <label>Especifica el motivo (obligatorio para respaldo):</label>
+      <textarea id="input-detalle-otros" rows="3" placeholder="Ej: Dueño se retiró por falta de tiempo, mascota muy estresada, no contaba con bozal..."></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn-cancel" onclick="cerrarModalCancelacion()">Volver</button>
+      <button type="button" class="btn-danger" style="margin-top:0; flex:2" id="btn-confirmar-cancelacion" onclick="confirmarCancelacion()">Confirmar Cancelación</button>
     </div>
   </div>
 </div>
@@ -203,12 +233,20 @@ function obtenerEtiquetaHorario(valorBloque) {
   return valorBloque ? String(valorBloque) : "Sin horario";
 }
 
+function esCancelado(estadoStr) {
+  return String(estadoStr || "").toLowerCase().startsWith("cancelado");
+}
+
 let vistaActual = "pendiente";
 let registrosGlobales = [];
 let registroSeleccionado = null;
 let mascotasModal = [];
 let nuevasMascotas = [];
 let filaSimuladaCounter = 9000;
+
+// Variables para modal de cancelación
+let filaACancelar = null;
+let motivoCancelacionSeleccionado = "";
 
 window.addEventListener("DOMContentLoaded", () => {
   if (MODO_PRUEBA) {
@@ -262,7 +300,7 @@ function actualizarContadores() {
       pendiente++;
       return;
     }
-    if (r.estado === "Cancelado") cancelado++;
+    if (esCancelado(r.estado)) cancelado++;
     else if (r.estado === "En consulta") consulta++;
     else if (r.estado === "Atendido") atendido++;
     else espera++;
@@ -306,7 +344,7 @@ function renderizarLista() {
     if (vistaActual === "espera" && estadoReal !== "En espera") return false;
     if (vistaActual === "consulta" && estadoReal !== "En consulta") return false;
     if (vistaActual === "atendido" && estadoReal !== "Atendido") return false;
-    if (vistaActual === "cancelado" && estadoReal !== "Cancelado") return false;
+    if (vistaActual === "cancelado" && !esCancelado(estadoReal)) return false;
 
     const numBloque = (String(r.bloque || "").match(/\d+/) || [""])[0];
     if (bloqueFiltro && numBloque !== bloqueFiltro) return false;
@@ -340,16 +378,16 @@ function renderizarLista() {
       badgeEstado = '<span class="badge badge-espera">⏳ En espera</span>';
       botonAccion =
         '<button type="button" class="btn-consulta" onclick="avanzarEstado(' + r.fila + ', \'En consulta\', this)">🩺 Pasar a Consulta</button>' +
-        '<button type="button" class="btn-baja" onclick="cancelarTurno(' + r.fila + ', this)">✕ Cancelar / Retirado</button>';
+        '<button type="button" class="btn-baja" onclick="abrirModalCancelacion(' + r.fila + ')">✕ Cancelar / Retirado</button>';
     } else if (estadoReal === "En consulta") {
       claseCard = "consulta";
       badgeEstado = '<span class="badge badge-consulta">🩺 En consulta</span>';
       botonAccion =
         '<button type="button" class="btn-atendido" onclick="avanzarEstado(' + r.fila + ', \'Atendido\', this)">✅ Marcar como Atendido</button>' +
-        '<button type="button" class="btn-baja" onclick="cancelarTurno(' + r.fila + ', this)">✕ Cancelar / Retirado</button>';
-    } else if (estadoReal === "Cancelado") {
+        '<button type="button" class="btn-baja" onclick="abrirModalCancelacion(' + r.fila + ')">✕ Cancelar / Retirado</button>';
+    } else if (esCancelado(estadoReal)) {
       claseCard = "cancelado";
-      badgeEstado = '<span class="badge badge-cancelado">✕ Cancelado / Retirado</span>';
+      badgeEstado = '<span class="badge badge-cancelado">✕ ' + escapeHTML(estadoReal) + '</span>';
       botonAccion = '<button type="button" class="btn-reintegrar" onclick="reintegrarTurno(' + r.fila + ', this)">↩ Reintegrar a En Espera</button>';
     } else {
       claseCard = "atendido";
@@ -377,11 +415,67 @@ function renderizarLista() {
   }).join("");
 }
 
-function cancelarTurno(numFila, btnEl) {
+/* Lógica del Modal de Cancelación */
+function abrirModalCancelacion(numFila) {
   const reg = registrosGlobales.find(r => r.fila === numFila);
-  const nombre = reg ? reg.mascotas : "esta mascota";
-  if (!confirm("¿Cancelar el turno de \"" + nombre + "\" y retirarlo del flujo activo?\n\nPodrás reintegrarlo después desde 'Cancelados' si el dueño regresa.")) return;
-  avanzarEstado(numFila, "Cancelado", btnEl);
+  if (!reg) return;
+
+  filaACancelar = numFila;
+  motivoCancelacionSeleccionado = "";
+
+  document.getElementById("cancel-modal-subtitulo").textContent =
+    "Paciente: " + reg.mascotas + " (" + reg.idPaciente + ") • Dueño: " + reg.dueno;
+  document.getElementById("btn-motivo-agresion").classList.remove("selected-agresion");
+  document.getElementById("btn-motivo-otros").classList.remove("selected-otros");
+  document.getElementById("grupo-detalle-otros").classList.add("hidden");
+  document.getElementById("input-detalle-otros").value = "";
+
+  document.getElementById("modal-cancelacion").style.display = "flex";
+}
+
+function seleccionarMotivoCancelacion(motivo) {
+  motivoCancelacionSeleccionado = motivo;
+  document.getElementById("btn-motivo-agresion").classList.toggle("selected-agresion", motivo === "Agresión");
+  document.getElementById("btn-motivo-otros").classList.toggle("selected-otros", motivo === "Otros motivos");
+
+  const grupoOtros = document.getElementById("grupo-detalle-otros");
+  if (motivo === "Otros motivos") {
+    grupoOtros.classList.remove("hidden");
+    document.getElementById("input-detalle-otros").focus();
+  } else {
+    grupoOtros.classList.add("hidden");
+  }
+}
+
+function cerrarModalCancelacion() {
+  document.getElementById("modal-cancelacion").style.display = "none";
+  filaACancelar = null;
+  motivoCancelacionSeleccionado = "";
+}
+
+async function confirmarCancelacion() {
+  if (!motivoCancelacionSeleccionado) {
+    alert("Selecciona si el motivo es Agresión u Otros motivos.");
+    return;
+  }
+
+  let estadoFinal = "";
+  if (motivoCancelacionSeleccionado === "Agresión") {
+    estadoFinal = "Cancelado - Agresión";
+  } else {
+    const detalle = document.getElementById("input-detalle-otros").value.trim();
+    if (!detalle) {
+      alert("Por favor escribe el detalle del motivo de cancelación.");
+      document.getElementById("input-detalle-otros").focus();
+      return;
+    }
+    estadoFinal = "Cancelado - Otros: " + detalle;
+  }
+
+  const btn = document.getElementById("btn-confirmar-cancelacion");
+  const filaObjetivo = filaACancelar;
+  cerrarModalCancelacion();
+  await avanzarEstado(filaObjetivo, estadoFinal, btn);
 }
 
 async function reintegrarTurno(numFila, btnEl) {
@@ -400,8 +494,10 @@ async function avanzarEstado(numFila, nuevoEstado, btnEl) {
     return;
   }
 
-  btnEl.disabled = true;
-  btnEl.textContent = "Actualizando...";
+  if (btnEl) {
+    btnEl.disabled = true;
+    btnEl.textContent = "Actualizando...";
+  }
 
   try {
     const resp = await fetch(API_URL, {
@@ -417,11 +513,11 @@ async function avanzarEstado(numFila, nuevoEstado, btnEl) {
       await cargarDatos();
     } else {
       alert("Error: " + json.mensaje);
-      btnEl.disabled = false;
+      if (btnEl) btnEl.disabled = false;
     }
   } catch (err) {
     alert("Error de conexión al cambiar estado.");
-    btnEl.disabled = false;
+    if (btnEl) btnEl.disabled = false;
   }
 }
 
