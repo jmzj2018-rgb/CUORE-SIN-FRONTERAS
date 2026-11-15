@@ -15,23 +15,38 @@
     .btn-refresh { background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; }
     .banner-prueba { background: #fef3c7; color: #92400e; text-align: center; padding: 8px 12px; font-size: 0.85rem; font-weight: 700; border-bottom: 1px solid #f59e0b; }
     .container { max-width: 720px; margin: 0 auto; padding: 16px; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .stats-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+    .stat-box { background: white; border-radius: 10px; padding: 10px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.06); border-top: 3px solid #cbd5e1; }
+    .stat-box.espera { border-top-color: #0284c7; }
+    .stat-box.consulta { border-top-color: #7c3aed; }
+    .stat-box.atendido { border-top-color: #10b981; }
+    .stat-num { font-size: 1.25rem; font-weight: 800; display: block; }
+    .stat-label { font-size: 0.72rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
     .tab { flex: 1; padding: 10px; border: 1px solid #cbd5e1; background: white; border-radius: 8px; font-weight: 600; cursor: pointer; }
     .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
     .controls { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-    input, select { padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; width: 100%; }
+    input, select { padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; width: 100%; }
     .controls input { flex: 2; min-width: 200px; }
-    .controls select { flex: 1; min-width: 150px; }
+    .controls select { flex: 1; min-width: 145px; }
     .card { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-left: 5px solid #94a3b8; }
     .card.pendiente { border-left-color: #f59e0b; }
+    .card.espera { border-left-color: #0284c7; }
+    .card.consulta { border-left-color: #7c3aed; background: #faf5ff; }
     .card.atendido { border-left-color: #10b981; }
     .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-    .badge { padding: 4px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; }
+    .badge { padding: 4px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; display: inline-block; }
     .badge-bloque { background: #e2e8f0; color: #334155; }
-    .badge-id { background: #d1fae5; color: #065f46; font-size: 0.95rem; }
+    .badge-id { background: #1e293b; color: #ffffff; font-size: 0.85rem; }
+    .badge-espera { background: #e0f2fe; color: #0369a1; }
+    .badge-consulta { background: #ede9fe; color: #6d28d9; }
+    .badge-atendido { background: #d1fae5; color: #065f46; }
     .meta { font-size: 0.9rem; color: #475569; margin: 6px 0; }
-    .btn-primary { background: var(--primary); color: white; border: none; padding: 12px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; font-size: 1rem; }
-    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-primary, .btn-consulta, .btn-atendido { color: white; border: none; padding: 11px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; font-size: 0.95rem; }
+    .btn-primary { background: var(--primary); }
+    .btn-consulta { background: #7c3aed; }
+    .btn-atendido { background: #059669; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
     .modal-backdrop { position: fixed; inset: 0; background: rgba(15,23,42,0.6); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
     .modal { background: white; border-radius: 14px; max-width: 500px; width: 100%; padding: 20px; max-height: 90vh; overflow-y: auto; }
     .pet-row { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 10px; background: #f8fafc; }
@@ -54,12 +69,27 @@
 </header>
 
 <div id="banner-prueba" class="banner-prueba hidden">
-  🧪 MODO PRUEBA ACTIVO: Los turnos simulados NO se guardan en Google Sheets
+  🧪 MODO PRUEBA ACTIVO: Los cambios simulados NO se guardan en Google Sheets
 </div>
 
 <div class="container">
+  <div class="stats-bar">
+    <div class="stat-box espera">
+      <span class="stat-num" id="count-espera">0</span>
+      <span class="stat-label">En Espera</span>
+    </div>
+    <div class="stat-box consulta">
+      <span class="stat-num" id="count-consulta">0</span>
+      <span class="stat-label">En Consulta</span>
+    </div>
+    <div class="stat-box atendido">
+      <span class="stat-num" id="count-atendido">0</span>
+      <span class="stat-label">Atendidos</span>
+    </div>
+  </div>
+
   <div class="tabs">
-    <button class="tab active" id="tab-lista" onclick="cambiarTab('lista')">Inscritos / Turnos</button>
+    <button class="tab active" id="tab-lista" onclick="cambiarTab('lista')">Flujo de Pacientes</button>
     <button class="tab" id="tab-nuevo" onclick="cambiarTab('nuevo')">+ Nuevo Sin Inscripción</button>
   </div>
 
@@ -77,8 +107,11 @@
       </select>
       <select id="filtro-estado" onchange="renderizarLista()">
         <option value="todos">Todos los estados</option>
-        <option value="pendiente" selected>Pendientes de llegada</option>
-        <option value="atendido">Con turno asignado</option>
+        <option value="pendiente">1. Pendiente de llegada</option>
+        <option value="espera">2. En espera de atención</option>
+        <option value="consulta">3. En consulta (revisión)</option>
+        <option value="atendido">4. Atendido (finalizado)</option>
+        <option value="activos" selected>Activos en evento (Espera + Consulta)</option>
       </select>
     </div>
     <div id="contenedor-tarjetas"><p>Iniciando aplicación...</p></div>
@@ -151,6 +184,8 @@ window.addEventListener("DOMContentLoaded", () => {
   if (MODO_PRUEBA) {
     document.getElementById("banner-prueba").classList.remove("hidden");
   }
+  // Por defecto abrimos en "1. Pendiente de llegada" para recepción
+  document.getElementById("filtro-estado").value = "pendiente";
   cargarDatos();
   generarInputsNuevo();
 });
@@ -162,6 +197,19 @@ function cambiarTab(tab) {
   document.getElementById("vista-nuevo").classList.toggle("hidden", tab !== "nuevo");
 }
 
+function actualizarContadores() {
+  let espera = 0, consulta = 0, atendido = 0;
+  registrosGlobales.forEach(r => {
+    if (!r.idPaciente) return;
+    if (r.estado === "En consulta") consulta++;
+    else if (r.estado === "Atendido") atendido++;
+    else espera++;
+  });
+  document.getElementById("count-espera").textContent = espera;
+  document.getElementById("count-consulta").textContent = consulta;
+  document.getElementById("count-atendido").textContent = atendido;
+}
+
 async function cargarDatos() {
   const contenedor = document.getElementById("contenedor-tarjetas");
   contenedor.innerHTML = "<p>Sincronizando con Google Sheets...</p>";
@@ -171,6 +219,7 @@ async function cargarDatos() {
     const json = await resp.json();
     if (json.status === "ok") {
       registrosGlobales = json.datos;
+      actualizarContadores();
       renderizarLista();
     } else {
       contenedor.innerHTML = "<p>Error al leer datos: " + escapeHTML(json.mensaje) + "</p>";
@@ -183,13 +232,18 @@ async function cargarDatos() {
 function renderizarLista() {
   const texto = document.getElementById("buscador").value.toLowerCase().trim();
   const bloqueFiltro = document.getElementById("filtro-bloque").value;
-  const estado = document.getElementById("filtro-estado").value;
+  const estadoFiltro = document.getElementById("filtro-estado").value;
   const contenedor = document.getElementById("contenedor-tarjetas");
 
   const filtrados = registrosGlobales.filter(r => {
     const tieneId = r.idPaciente !== "";
-    if (estado === "pendiente" && tieneId) return false;
-    if (estado === "atendido" && !tieneId) return false;
+    const estadoReal = !tieneId ? "pendiente" : (r.estado || "En espera");
+
+    if (estadoFiltro === "pendiente" && tieneId) return false;
+    if (estadoFiltro === "espera" && estadoReal !== "En espera") return false;
+    if (estadoFiltro === "consulta" && estadoReal !== "En consulta") return false;
+    if (estadoFiltro === "atendido" && estadoReal !== "Atendido") return false;
+    if (estadoFiltro === "activos" && (estadoReal !== "En espera" && estadoReal !== "En consulta")) return false;
 
     const numBloque = (String(r.bloque || "").match(/\d+/) || [""])[0];
     if (bloqueFiltro && numBloque !== bloqueFiltro) return false;
@@ -202,15 +256,36 @@ function renderizarLista() {
   });
 
   if (filtrados.length === 0) {
-    contenedor.innerHTML = "<p>No hay registros que coincidan con el filtro.</p>";
+    contenedor.innerHTML = "<p>No hay pacientes en esta vista.</p>";
     return;
   }
 
   contenedor.innerHTML = filtrados.map(r => {
-    const atendido = r.idPaciente !== "";
+    const tieneId = r.idPaciente !== "";
+    const estadoReal = !tieneId ? "pendiente" : (r.estado || "En espera");
     const etiquetaHorario = escapeHTML(obtenerEtiquetaHorario(r.bloque));
 
-    return '<div class="card ' + (atendido ? 'atendido' : 'pendiente') + '">' +
+    let claseCard = "pendiente";
+    let badgeEstado = "";
+    let botonAccion = "";
+
+    if (!tieneId) {
+      claseCard = "pendiente";
+      botonAccion = '<button class="btn-primary" onclick="abrirModalCheckin(' + r.fila + ')">Registrar Llegada y Especie</button>';
+    } else if (estadoReal === "En espera") {
+      claseCard = "espera";
+      badgeEstado = '<span class="badge badge-espera">⏳ En espera de atención</span>';
+      botonAccion = '<button class="btn-consulta" onclick="avanzarEstado(' + r.fila + ', \'En consulta\', this)">🩺 Pasar a Consulta</button>';
+    } else if (estadoReal === "En consulta") {
+      claseCard = "consulta";
+      badgeEstado = '<span class="badge badge-consulta">🩺 En consulta (revisando)</span>';
+      botonAccion = '<button class="btn-atendido" onclick="avanzarEstado(' + r.fila + ', \'Atendido\', this)">✅ Marcar como Atendido</button>';
+    } else {
+      claseCard = "atendido";
+      badgeEstado = '<span class="badge badge-atendido">✅ Atendido</span>';
+    }
+
+    return '<div class="card ' + claseCard + '">' +
       '<div class="card-header">' +
         '<div>' +
           '<strong>' + escapeHTML(r.dueno) + '</strong>' +
@@ -219,22 +294,55 @@ function renderizarLista() {
         '<span class="badge badge-bloque">🕒 ' + etiquetaHorario + '</span>' +
       '</div>' +
       '<div class="meta">' +
-        '🐾 <strong>Mascotas (' + r.cantidad + '):</strong> ' + escapeHTML(r.mascotas) +
-        (r.especie ? ' • <em>' + escapeHTML(r.especie) + '</em>' : '') +
+        '🐾 <strong>Mascota' + (tieneId ? '' : 's (' + r.cantidad + ')') + ':</strong> ' + escapeHTML(r.mascotas) +
+        (r.especie ? ' • <strong>' + escapeHTML(r.especie) + '</strong>' : '') +
       '</div>' +
-      (atendido
-        ? '<div style="margin-top:8px"><span class="badge badge-id">Turno: ' + escapeHTML(r.idPaciente) + '</span></div>'
-        : '<button class="btn-primary" onclick="abrirModalCheckin(' + r.fila + ')">Registrar Llegada y Especie</button>'
+      (tieneId
+        ? '<div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">' +
+            '<span class="badge badge-id">' + escapeHTML(r.idPaciente) + '</span>' +
+            badgeEstado +
+          '</div>'
+        : ''
       ) +
+      botonAccion +
     '</div>';
   }).join("");
 }
 
+async function avanzarEstado(numFila, nuevoEstado, btnEl) {
+  if (MODO_PRUEBA) {
+    alert("🧪 [MODO PRUEBA - NO GUARDADO EN SHEETS]\n\nEl paciente pasaría al estado: " + nuevoEstado);
+    return;
+  }
+
+  btnEl.disabled = true;
+  btnEl.textContent = "Actualizando...";
+
+  try {
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        accion: "cambiar_estado",
+        fila: numFila,
+        nuevoEstado: nuevoEstado
+      })
+    });
+    const json = await resp.json();
+    if (json.status === "ok") {
+      await cargarDatos();
+    } else {
+      alert("Error: " + json.mensaje);
+      btnEl.disabled = false;
+    }
+  } catch (err) {
+    alert("Error de conexión al cambiar estado.");
+    btnEl.disabled = false;
+  }
+}
+
 function separarNombresMascotas(textoCrudo, cantidad) {
   const limpio = String(textoCrudo || "").trim();
-  if (cantidad <= 1) {
-    return [limpio || "Mascota 1"];
-  }
+  if (cantidad <= 1) return [limpio || "Mascota 1"];
 
   const partes = limpio
     .split(/\s*[,;]\s*|\s+y\s+/i)
@@ -315,7 +423,7 @@ async function confirmarCheckin() {
       };
     });
 
-    const resumen = simulados.map(a => a.nombre + " (" + a.especie + "): " + a.id).join("\n");
+    const resumen = simulados.map(a => a.nombre + " (" + a.especie + "): " + a.id + " → En espera").join("\n");
     alert("🧪 [MODO PRUEBA - NO GUARDADO EN SHEETS]\n\nTurnos que se asignarían:\n\n" + resumen);
     cerrarModal();
     return;
@@ -337,7 +445,7 @@ async function confirmarCheckin() {
     const json = await resp.json();
 
     if (json.status === "ok") {
-      const resumen = json.asignados.map(a => a.nombre + " (" + a.especie + "): " + a.id).join("\n");
+      const resumen = json.asignados.map(a => a.nombre + " (" + a.especie + "): " + a.id + " → En espera").join("\n");
       alert("✅ Turnos asignados:\n\n" + resumen);
       cerrarModal();
       await cargarDatos();
@@ -404,7 +512,7 @@ async function guardarNuevoPresencial() {
       };
     });
 
-    const resumen = simulados.map(a => a.nombre + " (" + a.especie + "): " + a.id).join("\n");
+    const resumen = simulados.map(a => a.nombre + " (" + a.especie + "): " + a.id + " → En espera").join("\n");
     alert("🧪 [MODO PRUEBA - NO GUARDADO EN SHEETS]\n\nPacientes que se crearían:\n\n" + resumen);
     return;
   }
@@ -428,7 +536,7 @@ async function guardarNuevoPresencial() {
     const json = await resp.json();
 
     if (json.status === "ok") {
-      const resumen = json.asignados.map(a => a.nombre + " (" + a.especie + "): " + a.id).join("\n");
+      const resumen = json.asignados.map(a => a.nombre + " (" + a.especie + "): " + a.id + " → En espera").join("\n");
       alert("✅ Paciente(s) registrado(s):\n\n" + resumen);
       document.getElementById("nuevo-dueno").value = "";
       document.getElementById("nuevo-doc").value = "";
