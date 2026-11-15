@@ -63,10 +63,13 @@
     .btn-primary { background: var(--primary); }
     .btn-consulta { background: #7c3aed; }
     .btn-atendido { background: #059669; }
+    .btn-add-pet { background: #f1f5f9; color: #0f766e; border: 2px dashed #0f766e; padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 4px; font-size: 0.9rem; }
+    .btn-remove-pet { background: #fee2e2; color: #b91c1c; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
     button:disabled { opacity: 0.6; cursor: not-allowed; }
     .modal-backdrop { position: fixed; inset: 0; background: rgba(15,23,42,0.6); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 50; }
     .modal { background: white; border-radius: 14px; max-width: 500px; width: 100%; padding: 20px; max-height: 90vh; overflow-y: auto; }
     .pet-row { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 10px; background: #f8fafc; }
+    .pet-row-header { display: flex; justify-content: space-between; align-items: center; }
     .species-group { display: flex; gap: 8px; margin-top: 8px; }
     .species-btn { flex: 1; padding: 10px; border: 2px solid #cbd5e1; border-radius: 8px; background: white; font-weight: 600; cursor: pointer; }
     .species-btn.selected-canino { border-color: #0284c7; background: #e0f2fe; color: #0369a1; }
@@ -112,7 +115,7 @@
 
   <div id="vista-lista">
     <div class="view-header">
-      <p class="view-title" id="titulo-vista-actual">Mostrando: Citas pendientes de llegada</p>
+      <p class="view-title" id="titulo-vista-actual">Mostrando: 📋 Citas pendientes de llegada</p>
       <button type="button" class="link-todos" onclick="seleccionarVista('todos')">Ver todos</button>
     </div>
 
@@ -163,6 +166,7 @@
     <h3 style="margin-top:0" id="modal-titulo">Confirmar Llegada</h3>
     <p class="meta" id="modal-subtitulo"></p>
     <div id="modal-mascotas-lista"></div>
+    <button type="button" class="btn-add-pet" onclick="agregarMascotaModal()">+ Agregar otra mascota</button>
     <div class="modal-actions">
       <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
       <button type="button" class="btn-primary" style="margin-top:0; flex:2" id="btn-confirmar-checkin" onclick="confirmarCheckin()">Asignar ID(s)</button>
@@ -189,7 +193,7 @@ function obtenerEtiquetaHorario(valorBloque) {
   return valorBloque ? String(valorBloque) : "Sin horario";
 }
 
-let vistaActual = "pendiente"; // "pendiente" | "espera" | "consulta" | "atendido" | "todos" | "nuevo"
+let vistaActual = "pendiente";
 let registrosGlobales = [];
 let registroSeleccionado = null;
 let mascotasModal = [];
@@ -207,7 +211,6 @@ window.addEventListener("DOMContentLoaded", () => {
 function seleccionarVista(vista) {
   vistaActual = vista;
 
-  // Quitar estado activo de todos los botones superiores y pestañas
   document.getElementById("btn-vista-espera").classList.remove("active");
   document.getElementById("btn-vista-consulta").classList.remove("active");
   document.getElementById("btn-vista-atendido").classList.remove("active");
@@ -411,21 +414,46 @@ function abrirModalCheckin(numFila) {
   const nombres = separarNombresMascotas(registroSeleccionado.mascotas, registroSeleccionado.cantidad);
   mascotasModal = nombres.map(n => ({ nombre: n, especie: "" }));
 
-  const horarioTexto = obtenerEtiquetaHorario(registroSeleccionado.bloque);
-  document.getElementById("modal-titulo").textContent = "Check-in: " + registroSeleccionado.dueno;
-  document.getElementById("modal-subtitulo").textContent =
-    "Horario: " + horarioTexto + " • Declaró " + registroSeleccionado.cantidad + " mascota(s). Verifica nombre y especie:";
-
+  actualizarSubtituloModal();
   renderizarMascotasModal();
   document.getElementById("modal-checkin").style.display = "flex";
 }
 
+function actualizarSubtituloModal() {
+  if (!registroSeleccionado) return;
+  const horarioTexto = obtenerEtiquetaHorario(registroSeleccionado.bloque);
+  document.getElementById("modal-titulo").textContent = "Check-in: " + registroSeleccionado.dueno;
+  document.getElementById("modal-subtitulo").textContent =
+    "Horario: " + horarioTexto + " • Registrando " + mascotasModal.length + " mascota(s). Verifica nombre y especie:";
+}
+
+function agregarMascotaModal() {
+  mascotasModal.push({ nombre: "", especie: "" });
+  actualizarSubtituloModal();
+  renderizarMascotasModal();
+}
+
+function eliminarMascotaModal(idx) {
+  if (mascotasModal.length <= 1) return;
+  mascotasModal.splice(idx, 1);
+  actualizarSubtituloModal();
+  renderizarMascotasModal();
+}
+
 function renderizarMascotasModal() {
   const cont = document.getElementById("modal-mascotas-lista");
+  const puedeEliminar = mascotasModal.length > 1;
+
   cont.innerHTML = mascotasModal.map((m, idx) =>
     '<div class="pet-row">' +
-      '<label style="font-size:0.8rem; font-weight:700; color:#475569">Mascota ' + (idx + 1) + '</label>' +
-      '<input type="text" value="' + escapeHTML(m.nombre) + '" oninput="mascotasModal[' + idx + '].nombre = this.value" style="margin-top:4px" />' +
+      '<div class="pet-row-header">' +
+        '<label style="font-size:0.8rem; font-weight:700; color:#475569">Mascota ' + (idx + 1) + '</label>' +
+        (puedeEliminar
+          ? '<button type="button" class="btn-remove-pet" onclick="eliminarMascotaModal(' + idx + ')">✕ Quitar</button>'
+          : ''
+        ) +
+      '</div>' +
+      '<input type="text" placeholder="Nombre de la mascota" value="' + escapeHTML(m.nombre) + '" oninput="mascotasModal[' + idx + '].nombre = this.value" style="margin-top:6px" />' +
       '<div class="species-group">' +
         '<button type="button" class="species-btn ' + (m.especie === 'Canino' ? 'selected-canino' : '') + '" onclick="seleccionarEspecieModal(' + idx + ', \'Canino\')">🐶 Canino</button>' +
         '<button type="button" class="species-btn ' + (m.especie === 'Felino' ? 'selected-felino' : '') + '" onclick="seleccionarEspecieModal(' + idx + ', \'Felino\')">🐱 Felino</button>' +
@@ -471,6 +499,7 @@ async function confirmarCheckin() {
       simulados.push({ nombre: m.nombre, especie: m.especie, id: nuevoId });
 
       if (i === 0 && idxOriginal !== -1) {
+        registrosGlobales[idxOriginal].cantidad = mascotasModal.length;
         registrosGlobales[idxOriginal].mascotas = m.nombre;
         registrosGlobales[idxOriginal].especie = m.especie;
         registrosGlobales[idxOriginal].idPaciente = nuevoId;
@@ -480,6 +509,7 @@ async function confirmarCheckin() {
         registrosGlobales.splice(idxOriginal + i, 0, {
           ...registroSeleccionado,
           fila: filaSimuladaCounter,
+          cantidad: mascotasModal.length,
           mascotas: m.nombre,
           especie: m.especie,
           idPaciente: nuevoId,
